@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TransFlow — Công Cụ Gõ &amp; Chuyển Ngữ Tại Chỗ (Việt · Anh · Nhật · Trung)</title>
+  <script>
+    // Force HTTPS on any public domain so visitors always get a secure SSL padlock
+    (function () {
+      var h = location.hostname;
+      var isLocal = (h === 'localhost' || h === '127.0.0.1' || h === '');
+      if (!isLocal && location.protocol === 'http:') {
+        location.replace('https://' + location.host + location.pathname + location.search + location.hash);
+      }
+      if (!isLocal) {
+        var meta = document.createElement('meta');
+        meta.httpEquiv = 'Content-Security-Policy';
+        meta.content = 'upgrade-insecure-requests';
+        document.head.appendChild(meta);
+      }
+    })();
+  </script>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="bg-glow bg-glow-1"></div>
+  <div class="bg-glow bg-glow-2"></div>
+
+  <!-- Top Navigation -->
+  <header class="topbar">
+    <div class="container topbar-inner">
+      <div class="brand">
+        <div class="brand-logo">⇄</div>
+        <div>
+          <div class="brand-title">TransFlow <span class="badge-live">LIVE IME</span></div>
+          <div class="brand-sub">Gõ &amp; Chuyển Ngữ Ngay Tại Chỗ · VI ⇄ EN ⇄ JA ⇄ ZH</div>
+        </div>
+      </div>
+
+      <nav class="nav-tabs" role="tablist">
+        <button class="nav-tab active" data-tab="studio" type="button">✍️ Soạn Thảo Tại Chỗ</button>
+        <button class="nav-tab" data-tab="sandbox" type="button">💬 Thử Trên Messenger / Zalo / Gmail</button>
+        <button class="nav-tab" data-tab="extension" type="button">🧩 Cài Tiện Ích &amp; Chia Sẻ</button>
+      </nav>
+
+      <div class="top-actions">
+        <button class="btn-outline" id="shareLinkBtn" type="button" title="Sao chép link chia sẻ">🔗 Chia sẻ</button>
+        <a class="btn-primary" href="transflow-extension.zip" download="transflow-extension.zip">⬇️ Tải Chrome Extension</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="container main-content">
+    <!-- Quick Global Toolbar (Target Lang + Engine + Shortcut) -->
+    <section class="control-strip">
+      <div class="strip-group">
+        <span class="strip-label">Đổi sang ngôn ngữ:</span>
+        <div class="lang-pills" id="webLangPills">
+          <button type="button" class="pill-btn" data-lang="vi">🇻🇳 Tiếng Việt <kbd>Alt+1</kbd></button>
+          <button type="button" class="pill-btn active" data-lang="en">🇬🇧 Tiếng Anh <kbd>Alt+2</kbd></button>
+          <button type="button" class="pill-btn" data-lang="ja">🇯🇵 Tiếng Nhật <kbd>Alt+3</kbd></button>
+          <button type="button" class="pill-btn" data-lang="zh-CN">🇨🇳 Tiếng Trung <kbd>Alt+4</kbd></button>
+          <button type="button" class="pill-btn" data-lang="zh-TW">🇹🇼 Trung Phồn</button>
+        </div>
+      </div>
+
+      <div class="strip-group strip-right">
+        <div class="mini-field">
+          <label for="webConfirmSelect">Phím xác nhận:</label>
+          <select id="webConfirmSelect" data-transflow-ignore="true">
+            <option value="Tab">Tab (Mặc định)</option>
+            <option value="Alt+Q">Alt + Q</option>
+            <option value="Ctrl+Enter">Ctrl + Enter</option>
+            <option value="ButtonOnly">Chỉ bấm nút</option>
+          </select>
+        </div>
+        <button type="button" class="btn-ai-Trigger" id="openAiModalBtn">
+          <span id="engineBadgeText">⚡ Dịch Miễn Phí (Dùng ngay)</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- TAB 1: SMART IN-PLACE STUDIO -->
+    <section class="tab-panel active" id="tab-studio">
+      <div class="studio-grid">
+        <div class="editor-card">
+          <div class="editor-header">
+            <div class="editor-title-wrap">
+              <h2>Khung Gõ Chuyển Ngữ Trực Tiếp</h2>
+              <p>Gõ Tiếng Việt, Anh, Nhật hoặc Trung → Xem bản dịch nổi lên realtime → Ấn <kbd id="hintKeyBadge">Tab</kbd> hoặc nút <strong>Xác nhận</strong> để đổi chữ ngay tại chỗ và gõ tiếp câu sau!</p>
+            </div>
+            <div class="editor-actions">
+              <button type="button" class="btn-ghost" id="clearEditorBtn">🗑️ Xóa</button>
+              <button type="button" class="btn-copy-main" id="copyAllEditorBtn">📋 Sao chép văn bản</button>
+            </div>
+          </div>
+
+          <!-- Sample Quick-Try Chips -->
+          <div class="sample-bar">
+            <span class="sample-label">Thử nhanh mẫu câu:</span>
+            <button type="button" class="sample-chip" data-sample="Chào bạn, hôm nay tiến độ dự án của chúng ta thế nào rồi?" data-target="en">🇻🇳→🇬🇧 Họp dự án</button>
+            <button type="button" class="sample-chip" data-sample="Cảm ơn anh chị đã hỗ trợ nhiệt tình, mong sớm nhận được phản hồi từ quý công ty." data-target="ja">🇻🇳→🇯🇵 Email lịch sự Nhật</button>
+            <button type="button" class="sample-chip" data-sample="Cho mình hỏi mẫu hàng này còn sẵn trong kho không và thời gian giao hàng bao lâu?" data-target="zh-CN">🇻🇳→🇨🇳 Hỏi hàng Tiếng Trung</button>
+            <button type="button" class="sample-chip" data-sample="本日のミーティングは午後3時から開始いたします。よろしくお願いいたします。" data-target="vi">🇯🇵→🇻🇳 Dịch Nhật sang Việt</button>
+          </div>
+
+          <textarea
+            id="mainStudioEditor"
+            class="studio-textarea"
+            placeholder="Bắt đầu gõ tại đây... Ví dụ: gõ 'Xin chào, chiều nay chúng ta họp lúc 3 giờ nhé' rồi ấn phím Tab để biến ngay thành Tiếng Anh / Nhật / Trung tại chỗ!"
+          ></textarea>
+
+          <div class="editor-footer">
+            <div class="tips-inline">
+              <span>💡 <strong>Mẹo gõ nối tiếp:</strong> Sau khi ấn <kbd>Tab</kbd> đổi câu 1 sang Tiếng Anh, bạn cứ gõ tiếp câu 2 bằng Tiếng Việt ngay sau đó — công cụ chỉ dịch phần mới gõ!</span>
+            </div>
+            <div class="char-counter" id="charCounter">0 ký tự</div>
+          </div>
+        </div>
+
+        <!-- Sidebar: History & Quick Guide -->
+        <aside class="side-stack">
+          <div class="side-card">
+            <div class="side-card-head">
+              <h3>⚡ Phím tắt siêu tốc</h3>
+            </div>
+            <ul class="shortcut-list">
+              <li><span>Xác nhận đổi chữ tại chỗ</span> <kbd>Tab</kbd></li>
+              <li><span>Ép dịch &amp; đổi ngay lập tức</span> <kbd>Alt + Q</kbd></li>
+              <li><span>Chuyển đích sang Tiếng Việt</span> <kbd>Alt + 1</kbd></li>
+              <li><span>Chuyển đích sang Tiếng Anh</span> <kbd>Alt + 2</kbd></li>
+              <li><span>Chuyển đích sang Tiếng Nhật</span> <kbd>Alt + 3</kbd></li>
+              <li><span>Chuyển đích sang Tiếng Trung</span> <kbd>Alt + 4</kbd></li>
+              <li><span>Hoàn tác câu vừa đổi</span> <kbd>Alt + Z</kbd></li>
+              <li><span>Bật / Tắt nhanh công cụ</span> <kbd>Alt + X</kbd></li>
+            </ul>
+          </div>
+
+          <div class="side-card history-card">
+            <div class="side-card-head">
+              <h3>🕒 Lịch sử vừa chuyển ngữ</h3>
+              <button type="button" class="link-btn" id="clearHistoryBtn">Xóa</button>
+            </div>
+            <div class="history-list" id="historyList">
+              <div class="empty-state">Các câu bạn ấn Xác nhận chuyển ngữ sẽ lưu nhanh tại đây để tiện tra lại.</div>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <!-- TAB 2: MESSENGER / ZALO WEB / GMAIL LIVE SANDBOX -->
+    <section class="tab-panel" id="tab-sandbox">
+      <div class="sandbox-intro">
+        <h2>Trải nghiệm cảm giác gõ thực tế trên Messenger, Zalo Web &amp; Gmail</h2>
+        <p>Tất cả các ô bên dưới đều dùng chuẩn <code>contenteditable</code> giống hệt ứng dụng thật. Hãy gõ Tiếng Việt → ấn <kbd>Tab</kbd> để đổi sang Anh / Nhật / Trung → ấn <kbd>Enter</kbd> để gửi tin nhắn!</p>
+      </div>
+
+      <div class="sandbox-grid">
+        <!-- Messenger Mock -->
+        <div class="mock-app mock-messenger">
+          <div class="mock-header messenger-head">
+            <div class="avatar av-blue">JS</div>
+            <div>
+              <div class="mock-name">John Smith · Đối tác Quốc tế</div>
+              <div class="mock-status">● Đang hoạt động trên Messenger</div>
+            </div>
+          </div>
+          <div class="mock-messages" id="messengerThread">
+            <div class="msg-row incoming">
+              <div class="msg-bubble">Hey! Are we ready to launch the new web feature this Friday?</div>
+            </div>
+          </div>
+          <div class="mock-input-bar">
+            <div
+              class="mock-ce-input"
+              id="messengerInput"
+              contenteditable="true"
+              role="textbox"
+              data-placeholder="Gõ Tiếng Việt tại đây rồi ấn Tab đổi sang Tiếng Anh, Enter để gửi..."
+            ></div>
+            <button type="button" class="send-btn" data-send-target="messenger">Gửi</button>
+          </div>
+        </div>
+
+        <!-- Zalo / LINE Partner Mock (Japanese / Chinese) -->
+        <div class="mock-app mock-zalo">
+          <div class="mock-header zalo-head">
+            <div class="avatar av-cyan">田中</div>
+            <div>
+              <div class="mock-name">Tanaka-san / 客户群 (Zalo · LINE)</div>
+              <div class="mock-status">● Nhóm dự án Nhật - Trung - Việt</div>
+            </div>
+          </div>
+          <div class="mock-messages" id="zaloThread">
+            <div class="msg-row incoming">
+              <div class="msg-bubble">こんにちは！デザインデータの確認は完了しましたか？</div>
+            </div>
+          </div>
+          <div class="mock-input-bar">
+            <div
+              class="mock-ce-input"
+              id="zaloInput"
+              contenteditable="true"
+              role="textbox"
+              data-placeholder="Bấm Alt+3 (Nhật) hoặc Alt+4 (Trung), gõ Tiếng Việt rồi ấn Tab..."
+            ></div>
+            <button type="button" class="send-btn zalo-send" data-send-target="zalo">Gửi</button>
+          </div>
+        </div>
+
+        <!-- Gmail Compose Mock -->
+        <div class="mock-app mock-gmail">
+          <div class="mock-header gmail-head">
+            <div>
+              <div class="mock-name">✉️ Thư mới — Gmail Compose</div>
+              <div class="mock-status">Tới: global-team@company.com</div>
+            </div>
+          </div>
+          <div class="gmail-body-wrap">
+            <div
+              class="gmail-ce-editor"
+              id="gmailInput"
+              contenteditable="true"
+              role="textbox"
+              data-placeholder="Soạn email nhiều dòng... Mỗi dòng bạn gõ Tiếng Việt rồi ấn Tab sẽ đổi ngay sang ngôn ngữ đích!"
+            ></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 3: INSTALL EXTENSION & SHARE -->
+    <section class="tab-panel" id="tab-extension">
+      <div class="install-grid">
+        <div class="install-card highlight-border">
+          <div class="badge-tag">KHUYÊN DÙNG CHO MÁY TÍNH</div>
+          <h2>🧩 Cài Tiện Ích Chrome / Edge / Cốc Cốc</h2>
+          <p class="install-desc">Sau khi cài đặt (chỉ mất 30 giây), thanh dịch thông minh sẽ tự động hoạt động trực tiếp bên trong <strong>Messenger, Zalo Web, Gmail, Slack, Discord, Facebook, ChatGPT</strong> và mọi trang web!</p>
+
+          <div class="download-cta-box">
+            <a class="btn-primary btn-lg" href="transflow-extension.zip" download="transflow-extension.zip">
+              ⬇️ Tải gói cài đặt transflow-extension.zip
+            </a>
+            <span class="version-note">Phiên bản v1.0.0 · Manifest V3 · An toàn &amp; Nhẹ (&lt;50KB)</span>
+          </div>
+
+          <ol class="steps-list">
+            <li>
+              <strong>Bước 1:</strong> Tải file <code>transflow-extension.zip</code> ở trên và giải nén ra một thư mục (hoặc dùng trực tiếp thư mục <code>extension</code> trong máy).
+            </li>
+            <li>
+              <strong>Bước 2:</strong> Mở trình duyệt Chrome / Edge / Cốc Cốc, nhập vào thanh địa chỉ:
+              <code class="copyable-code" data-copy="chrome://extensions">chrome://extensions</code> (bấm để copy) rồi bật công tắc <strong>Chế độ dành cho nhà phát triển (Developer mode)</strong> ở góc phải trên cùng.
+            </li>
+            <li>
+              <strong>Bước 3:</strong> Bấm <strong>Tải tiện ích đã giải nén (Load unpacked)</strong> → Chọn thư mục <code>transflow-extension</code> (hoặc <code>extension</code>). Xong! Mở Messenger / Zalo Web gõ thử ngay!
+            </li>
+          </ol>
+        </div>
+
+        <div class="install-card">
+          <div class="badge-tag tag-cyan">CHIA SẺ CHO MỌI NGƯỜI CÙNG DÙNG</div>
+          <h2>🌐 Chia Sẻ Link Web &amp; Bookmarklet Nhúng Nhanh</h2>
+          <p class="install-desc">Bạn có thể đưa toàn bộ thư mục <code>web/</code> này lên các nền tảng miễn phí (GitHub Pages, Netlify Drop, Vercel, Cloudflare Pages) chỉ với thao tác kéo-thả để có link <code>https://...</code> gửi cho cả nhóm dùng chung trên cả PC lẫn Điện thoại!</p>
+
+          <div class="share-box">
+            <h4>1. Dùng trực tiếp trên Điện thoại &amp; Máy tính không cần cài đặt</h4>
+            <p>Mọi người chỉ cần mở link trang web này, gõ trong tab <strong>Soạn Thảo Tại Chỗ</strong>, chạm nút <strong>Xác nhận</strong> trên màn hình cảm ứng là đổi ngôn ngữ ngay lập tức.</p>
+          </div>
+
+          <div class="share-box mt-14">
+            <h4>2. Nút dấu trang thông minh (Bookmarklet)</h4>
+            <p>Khi trang web được mở qua HTTP/HTTPS, kéo nút bên dưới thả lên <strong>Thanh dấu trang (Bookmarks Bar)</strong> của trình duyệt. Khi đang ở trang web bất kỳ, bấm vào dấu trang đó để kích hoạt bộ gõ dịch tại chỗ!</p>
+            <div class="bookmarklet-row">
+              <a id="bookmarkletLink" class="bookmarklet-pill" href="#bookmarklet" title="Kéo nút này thả lên thanh Dấu trang của trình duyệt">⚡ Bật Gõ Dịch TransFlow</a>
+              <span class="drag-hint">← Kéo thả lên thanh Bookmark</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Gemini AI & Advanced Settings Modal -->
+  <div class="modal-backdrop hidden" id="aiModalBackdrop" data-transflow-ignore="true">
+    <div class="modal-card" role="dialog" aria-modal="true">
+      <div class="modal-head">
+        <h3>✨ Cấu hình Nguồn Dịch &amp; Văn Phong AI</h3>
+        <button type="button" class="close-modal-btn" id="closeAiModalBtn">×</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="engine-choice-grid">
+          <label class="engine-radio-card" id="cardFree">
+            <input type="radio" name="webEngine" value="free" checked />
+            <div>
+              <div class="erc-title">⚡ Dịch Miễn Phí Mặc Định</div>
+              <div class="erc-desc">Dùng ngay lập tức cho mọi người, không cần tài khoản hay API key, tốc độ phản hồi cực nhanh (~150ms).</div>
+            </div>
+          </label>
+
+          <label class="engine-radio-card" id="cardGemini">
+            <input type="radio" name="webEngine" value="gemini" />
+            <div>
+              <div class="erc-title">✨ Gemini AI (Tùy chỉnh Văn phong &amp; Kính ngữ)</div>
+              <div class="erc-desc">Hiểu ngữ cảnh câu trước, chuẩn kính ngữ Tiếng Nhật (Keigo), đại từ Tiếng Việt và văn phong Email chuyên nghiệp.</div>
+            </div>
+          </label>
+        </div>
+
+        <div id="webGeminiFields" class="web-gemini-fields">
+          <div class="form-row">
+            <label for="webToneSelect">Phong cách dịch AI:</label>
+            <select id="webToneSelect">
+              <option value="natural">Tự nhiên, trôi chảy hàng ngày</option>
+              <option value="polite">Lịch sự / Công việc / Kính ngữ Nhật (Keigo)</option>
+              <option value="casual">Thân mật / Chat bạn bè</option>
+              <option value="concise">Ngắn gọn, súc tích</option>
+            </select>
+          </div>
+
+          <div class="form-row">
+            <div class="label-split">
+              <label for="webGeminiKey">Gemini API Key (Lưu riêng trên trình duyệt của bạn):</label>
+              <a href="https://aistudio.google.com/apikey" target="_blank" rel="noreferrer">Lấy key miễn phí tại Google AI Studio ↗</a>
+            </div>
+            <input type="password" id="webGeminiKey" placeholder="Dán mã AIzaSy... vào đây" autocomplete="off" />
+          </div>
+        </div>
+
+        <div class="form-row checkbox-row">
+          <label>
+            <input type="checkbox" id="webAutoPivotCheck" checked />
+            Tự động đảo chiều thông minh (Ví dụ đang chọn đích Tiếng Anh mà gõ Tiếng Anh sẽ tự dịch về Tiếng Việt)
+          </label>
+        </div>
+
+        <div class="form-row checkbox-row">
+          <label>
+            <input type="checkbox" id="webPhoneticCheck" checked />
+            Hiển thị phiên âm cách đọc Romaji (Tiếng Nhật) &amp; Pinyin (Tiếng Trung)
+          </label>
+        </div>
+      </div>
+
+      <div class="modal-foot">
+        <button type="button" class="btn-primary" id="saveAiModalBtn">Lưu cài đặt</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast notification -->
+  <div id="webToast" class="web-toast hidden"></div>
+
+  <!-- Shared Smart In-Place Translator Runtime -->
+  <script src="translator-core.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
