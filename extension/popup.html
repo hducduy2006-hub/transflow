@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TransFlow — Cài đặt dịch tại chỗ</title>
+  <link rel="stylesheet" href="popup.css" />
+</head>
+<body>
+  <div class="app">
+    <!-- Header -->
+    <header class="header">
+      <div class="brand">
+        <div class="logo-badge">⇄</div>
+        <div>
+          <h1>TransFlow</h1>
+          <p>Gõ &amp; Chuyển Ngữ Tại Chỗ</p>
+        </div>
+      </div>
+      <label class="switch" title="Bật / Tắt toàn cục (Alt+X)">
+        <input type="checkbox" id="enabledToggle" checked />
+        <span class="slider"></span>
+      </label>
+    </header>
+
+    <!-- Current Host Toggle -->
+    <div class="site-bar" id="siteBar">
+      <div class="site-info">
+        <span class="dot" id="siteDot"></span>
+        <span id="currentHostText">Đang hoạt động trên mọi trang</span>
+      </div>
+      <button class="site-toggle-btn" id="siteToggleBtn" type="button">Tạm tắt trang này</button>
+    </div>
+
+    <!-- Target Language Grid -->
+    <section class="card">
+      <div class="section-head">
+        <span>Ngôn ngữ đích khi ấn Xác nhận</span>
+        <span class="hint">Alt + 1..4</span>
+      </div>
+      <div class="lang-grid" id="targetLangGrid">
+        <button type="button" class="lang-card" data-lang="vi">
+          <span class="flag">🇻🇳</span>
+          <span class="name">Tiếng Việt</span>
+        </button>
+        <button type="button" class="lang-card active" data-lang="en">
+          <span class="flag">🇬🇧</span>
+          <span class="name">Tiếng Anh</span>
+        </button>
+        <button type="button" class="lang-card" data-lang="ja">
+          <span class="flag">🇯🇵</span>
+          <span class="name">Tiếng Nhật</span>
+        </button>
+        <button type="button" class="lang-card" data-lang="zh-CN">
+          <span class="flag">🇨🇳</span>
+          <span class="name">Trung (Giản)</span>
+        </button>
+        <button type="button" class="lang-card" data-lang="zh-TW">
+          <span class="flag">🇹🇼</span>
+          <span class="name">Trung (Phồn)</span>
+        </button>
+      </div>
+
+      <div class="row-setting mt-8">
+        <div>
+          <div class="label-sm">Tự động đảo chiều thông minh</div>
+          <div class="sub-sm">Nếu gõ trùng ngôn ngữ đích, tự dịch sang ngôn ngữ phụ</div>
+        </div>
+        <div class="pivot-controls">
+          <select id="fallbackLangSelect" class="select-sm" title="Ngôn ngữ đảo chiều">
+            <option value="vi">🇻🇳 VI</option>
+            <option value="en">🇬🇧 EN</option>
+            <option value="ja">🇯🇵 JA</option>
+            <option value="zh-CN">🇨🇳 ZH</option>
+          </select>
+          <label class="switch switch-sm">
+            <input type="checkbox" id="autoPivotToggle" checked />
+            <span class="slider"></span>
+          </label>
+        </div>
+      </div>
+    </section>
+
+    <!-- Typing & Confirm Behavior -->
+    <section class="card">
+      <div class="section-head">
+        <span>Cơ chế gõ &amp; Xác nhận đổi chữ</span>
+      </div>
+
+      <div class="row-setting">
+        <label class="label-sm" for="confirmKeySelect">Phím xác nhận đổi ngay</label>
+        <select id="confirmKeySelect" class="select-md">
+          <option value="Tab">Phím Tab (Khuyên dùng)</option>
+          <option value="Alt+Q">Tổ hợp Alt + Q</option>
+          <option value="Ctrl+Enter">Tổ hợp Ctrl + Enter</option>
+          <option value="ButtonOnly">Chỉ bấm nút Xác nhận</option>
+        </select>
+      </div>
+
+      <div class="row-setting mt-8">
+        <label class="label-sm" for="defaultScopeSelect">Phạm vi dịch mặc định</label>
+        <select id="defaultScopeSelect" class="select-md">
+          <option value="segment">Câu / đoạn đang gõ</option>
+          <option value="full">Toàn bộ ô nhập</option>
+        </select>
+      </div>
+
+      <div class="row-setting mt-8">
+        <span class="label-sm">Hiện phiên âm Romaji / Pinyin (Nhật · Trung)</span>
+        <label class="switch switch-sm">
+          <input type="checkbox" id="showPhoneticToggle" checked />
+          <span class="slider"></span>
+        </label>
+      </div>
+    </section>
+
+    <!-- Translation Engine -->
+    <section class="card">
+      <div class="section-head">
+        <span>Nguồn dịch thuật</span>
+      </div>
+      <div class="seg-tabs">
+        <button type="button" class="seg-btn active" data-engine="free">⚡ Miễn phí (Dùng ngay)</button>
+        <button type="button" class="seg-btn" data-engine="gemini">✨ Gemini AI (Văn phong)</button>
+      </div>
+
+      <div id="freeEngineNote" class="engine-note">
+        Hoạt động ngay 100% miễn phí không cần API key. Tự động nhận diện Việt · Anh · Nhật · Trung.
+      </div>
+
+      <div id="geminiPanel" class="gemini-panel hidden">
+        <div class="row-setting">
+          <label class="label-sm" for="toneSelect">Văn phong / Kính ngữ</label>
+          <select id="toneSelect" class="select-md">
+            <option value="natural">Tự nhiên, trôi chảy</option>
+            <option value="polite">Lịch sự / Kính ngữ (Keigo)</option>
+            <option value="casual">Thân mật / Chat bạn bè</option>
+            <option value="concise">Ngắn gọn, súc tích</option>
+          </select>
+        </div>
+
+        <div class="api-box mt-8">
+          <div class="api-label-row">
+            <label class="label-sm" for="geminiKeyInput">Gemini API Key</label>
+            <a href="https://aistudio.google.com/apikey" target="_blank" rel="noreferrer" class="link-xs">Lấy key miễn phí ↗</a>
+          </div>
+          <div class="api-input-row">
+            <input type="password" id="geminiKeyInput" placeholder="AIzaSy..." autocomplete="off" />
+            <button type="button" id="testKeyBtn" class="btn-secondary">Kiểm tra</button>
+          </div>
+          <div id="keyStatus" class="key-status"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Shortcuts Footer -->
+    <footer class="footer">
+      <div class="shortcut-chips">
+        <span><kbd>Tab</kbd> Đổi chữ</span>
+        <span><kbd>Alt+1..4</kbd> VI/EN/JA/ZH</span>
+        <span><kbd>Alt+Z</kbd> Hoàn tác</span>
+        <span><kbd>Esc</kbd> Ẩn</span>
+      </div>
+    </footer>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

@@ -1,0 +1,57 @@
+{
+  "manifest_version": 3,
+  "name": "TransFlow — Gõ & Chuyển Ngữ Tại Chỗ (VI · EN · JA · ZH)",
+  "short_name": "TransFlow",
+  "version": "1.0.0",
+  "description": "Phiên dịch realtime văn bản đang gõ và đổi ngôn ngữ ngay tại chỗ trên Messenger, Zalo Web, Gmail và mọi trang web (Việt · Anh · Nhật · Trung).",
+  "permissions": [
+    "storage",
+    "activeTab"
+  ],
+  "host_permissions": [
+    "https://translate.googleapis.com/*",
+    "https://api.mymemory.translated.net/*",
+    "https://generativelanguage.googleapis.com/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "TransFlow — Gõ & Chuyển Ngữ Tại Chỗ",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"],
+      "run_at": "document_idle",
+      "all_frames": true
+    }
+  ],
+  "commands": {
+    "toggle-transflow": {
+      "suggested_key": {
+        "default": "Alt+X"
+      },
+      "description": "Bật / Tắt nhanh TransFlow"
+    },
+    "instant-replace": {
+      "suggested_key": {
+        "default": "Alt+Q"
+      },
+      "description": "Dịch và thay thế ngay đoạn đang gõ"
+    }
+  }
+}
